@@ -82,6 +82,11 @@ public class RouletteServer {
   public RouletteServer(String protocolVersion) {
     this.listenPort = -1;
     this.protocolVersion = protocolVersion;
+    if (protocolVersion.equals(RouletteV1Protocol.VERSION)){
+      listenPort = RouletteV1Protocol.DEFAULT_PORT;
+    }else if (protocolVersion.equals(RouletteV2Protocol.VERSION)){
+      listenPort = RouletteV2Protocol.DEFAULT_PORT;
+    }
   }
 
   public void startServer() throws IOException {

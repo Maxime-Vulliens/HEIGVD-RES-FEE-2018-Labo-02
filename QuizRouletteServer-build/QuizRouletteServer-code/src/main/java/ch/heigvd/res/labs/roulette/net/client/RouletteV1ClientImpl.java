@@ -1,10 +1,12 @@
 package ch.heigvd.res.labs.roulette.net.client;
 
 import ch.heigvd.res.labs.roulette.data.*;
+import ch.heigvd.res.labs.roulette.net.protocol.ListCommandResponse;
 import ch.heigvd.res.labs.roulette.net.protocol.RouletteV1Protocol;
 import ch.heigvd.res.labs.roulette.net.protocol.InfoCommandResponse;
 import ch.heigvd.res.labs.roulette.net.protocol.RandomCommandResponse;
 
+import javax.sound.sampled.Line;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -26,11 +28,10 @@ import java.net.UnknownHostException;
 public class RouletteV1ClientImpl implements IRouletteV1Client {
 
   private static final Logger LOG = Logger.getLogger(RouletteV1ClientImpl.class.getName());
-  private Socket current_socket;
-  private StudentsStoreImpl studentList = new StudentsStoreImpl();
+  protected Socket current_socket;
 
-  private OutputStream os = null;
-  private InputStream is = null;
+  protected OutputStream os = null;
+  protected InputStream is = null;
 
   @Override
   public void connect(String server, int port) throws IOException {
@@ -122,10 +123,16 @@ public class RouletteV1ClientImpl implements IRouletteV1Client {
 
   @Override
   public String getProtocolVersion() throws IOException {
-    return RouletteV1Protocol.VERSION;
+    if (current_socket != null) {
+      os.write("INFO\n".getBytes());
+      String input = getStringFromInputStream(is);
+      InfoCommandResponse InfoResponse = JsonObjectMapper.parseJson(input, InfoCommandResponse.class);
+      return InfoResponse.getProtocolVersion();
+    }
+    return null;
   }
 
-  private String getStringFromInputStream(InputStream is){
+  protected String getStringFromInputStream(InputStream is){
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     StringBuilder out = new StringBuilder();
